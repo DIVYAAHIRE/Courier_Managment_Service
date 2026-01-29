@@ -796,20 +796,20 @@ const CashEntry = () => {
                                         <p>{formData.content}</p>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="summary-card-v2 highlight">
-                                <div className="card-header-v2 no-border" style={{ paddingBottom: '10px' }}>
-                                    <div className="header-left" style={{ color: '#fff' }}><CreditCard size={16} /> FINAL PRICING</div>
-                                </div>
-                                <div className="price-details-v2" style={{ padding: '0 25px 30px' }}>
-                                    <div className="price-row-v2" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ fontSize: '15px', color: '#e0f2fe' }}>Selected Service</span>
-                                        <span style={{ fontSize: '15px', fontWeight: '600', color: '#fff' }}>{formData.selectedService}</span>
+                                <div className="summary-card-v2 highlight" style={{ marginTop: '20px' }}>
+                                    <div className="card-header-v2 no-border" style={{ paddingBottom: '10px' }}>
+                                        <div className="header-left" style={{ color: '#fff' }}><CreditCard size={16} /> FINAL PRICING</div>
                                     </div>
-                                    <div className="total-row-v2" style={{ marginTop: '0', borderTop: 'none', paddingTop: '0', fontSize: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span>Total Amount</span>
-                                        <span>₹{formData.selectedService === 'Premium' ? '189.00' : '69.00'}</span>
+                                    <div className="price-details-v2" style={{ padding: '0 25px 30px' }}>
+                                        <div className="price-row-v2" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ fontSize: '15px', color: '#e0f2fe' }}>Selected Service</span>
+                                            <span style={{ fontSize: '15px', fontWeight: '600', color: '#fff' }}>{formData.selectedService}</span>
+                                        </div>
+                                        <div className="total-row-v2" style={{ marginTop: '0', borderTop: 'none', paddingTop: '0', fontSize: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span>Total Amount</span>
+                                            <span>₹{formData.selectedService === 'Premium' ? '189.00' : '69.00'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -17,9 +17,10 @@ import {
     Search,
     Maximize2,
     Plus,
-    Table as TableIcon
+    TableIcon
 } from 'lucide-react';
 import './AccountEntry.css';
+import './CashEntry.css';
 
 const AccountEntry = () => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -298,21 +299,45 @@ const AccountEntry = () => {
         setViewMode('table');
     };
 
-    const renderProgressIndicator = () => (
-        <div className="progress-stepper-v6">
-            {steps.map((step, index) => (
-                <React.Fragment key={step.id}>
-                    <div className={`step-node ${currentStep === step.id ? 'active' : ''} ${completedSteps.includes(step.id) || currentStep > step.id ? 'done' : ''}`}>
-                        <div className="node-marker">
-                            {completedSteps.includes(step.id) || currentStep > step.id ? <Check size={14} /> : step.id}
-                        </div>
-                        <span className="node-label">{step.title}</span>
+    const renderProgressIndicator = () => {
+        const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
+
+        return (
+            <div className="progress-stepper-v6">
+                <div className="stepper-top-row">
+                    <button
+                        className={`step-nav-btn-v6 ${currentStep === 1 ? 'disabled' : ''}`}
+                        onClick={handleBack}
+                        disabled={currentStep === 1}
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+
+                    <div className="stepper-labels">
+                        {steps.map((step) => (
+                            <div key={step.id} className={`step-label-item ${currentStep === step.id ? 'active' : ''}`}>
+                                <div className="step-icon-circle">
+                                    {completedSteps.includes(step.id) ? <Check size={12} /> : step.id}
+                                </div>
+                                <span className="step-title-text">{step.title}</span>
+                            </div>
+                        ))}
                     </div>
-                    {index < steps.length - 1 && <div className={`node-line ${completedSteps.includes(step.id) || currentStep > step.id ? 'active' : ''}`} />}
-                </React.Fragment>
-            ))}
-        </div>
-    );
+
+                    <button
+                        className={`step-nav-btn-v6 ${currentStep === 6 ? 'disabled' : ''}`}
+                        onClick={handleNext}
+                        disabled={currentStep === 6}
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
+                <div className="stepper-bar-container">
+                    <div className="stepper-progress-fill" style={{ width: `${progressPercentage}%` }}></div>
+                </div>
+            </div>
+        );
+    };
 
     const renderRecordsTable = () => (
         <div className="table-view-container-outer">
@@ -394,50 +419,54 @@ const AccountEntry = () => {
                 return (
                     <div className="step-view fade-in">
                         <div className="form-centered">
-                            <header className="col-header"><Hash size={16} /> Primary Details</header>
+                            <header className="section-title-premium">Primary Details</header>
 
-                            <div className="control-group scroll-dropdown-container" ref={partyRef}>
-                                <label>Party Name <span className="req">*</span></label>
-                                <div className="content-search-wrapper">
-                                    <input
-                                        type="text"
-                                        placeholder="Select or Search Party..."
-                                        value={partySearch}
-                                        onFocus={() => setIsPartyOpen(true)}
-                                        onChange={(e) => {
-                                            setPartySearch(e.target.value);
-                                            setIsPartyOpen(true);
-                                        }}
-                                    />
-                                    <Search size={14} className="search-icon-field" />
+                            <div className="compact-grid">
+                                <div className="control-group" ref={partyRef}>
+                                    <label>Party Name <span className="req">*</span></label>
+                                    <div className="input-container content-search-wrapper">
+                                        <input
+                                            type="text"
+                                            placeholder="Select or Search Party..."
+                                            value={partySearch}
+                                            onFocus={() => setIsPartyOpen(true)}
+                                            onChange={(e) => {
+                                                setPartySearch(e.target.value);
+                                                setIsPartyOpen(true);
+                                            }}
+                                        />
+                                        <Search size={14} className="search-icon-field" />
+                                    </div>
+
+                                    {isPartyOpen && (
+                                        <div className="custom-content-dropdown">
+                                            {filteredParties.length > 0 ? (
+                                                filteredParties.map(opt => (
+                                                    <div
+                                                        key={opt}
+                                                        className={`dropdown-item ${formData.partyName === opt ? 'selected' : ''}`}
+                                                        onClick={() => selectParty(opt)}
+                                                    >
+                                                        {opt}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="dropdown-no-results">No matches found</div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {errors.partyName && <span className="error-text">{errors.partyName}</span>}
                                 </div>
 
-                                {isPartyOpen && (
-                                    <div className="custom-content-dropdown">
-                                        {filteredParties.length > 0 ? (
-                                            filteredParties.map(opt => (
-                                                <div
-                                                    key={opt}
-                                                    className={`dropdown-item ${formData.partyName === opt ? 'selected' : ''}`}
-                                                    onClick={() => selectParty(opt)}
-                                                >
-                                                    {opt}
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="dropdown-no-results">No matches found</div>
-                                        )}
+                                <div className="control-group">
+                                    <label>Shipment Type <span className="req">*</span></label>
+                                    <div className="input-container">
+                                        <select name="shipmentType" value={formData.shipmentType} onChange={handleChange}>
+                                            <option value="Document">Document</option>
+                                            <option value="Non-Document">Non-Document </option>
+                                        </select>
                                     </div>
-                                )}
-                                {errors.partyName && <span className="error-text">{errors.partyName}</span>}
-                            </div>
-
-                            <div className="control-group">
-                                <label>Shipment Type <span className="req">*</span></label>
-                                <select name="shipmentType" value={formData.shipmentType} onChange={handleChange}>
-                                    <option value="Document">Document</option>
-                                    <option value="Non-Document">Non-Document </option>
-                                </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -446,55 +475,47 @@ const AccountEntry = () => {
                 return (
                     <div className="step-view fade-in">
                         <div className="form-centered">
-                            <header className="col-header"><Truck size={16} /> Shipment Details</header>
+                            <header className="section-title-premium">Shipment Details</header>
 
-                            <div className="control-group scroll-dropdown-container" ref={serviceRef}>
-                                <label>Service Name <span className="req">*</span></label>
-                                <div className="content-search-wrapper">
-                                    <input
-                                        type="text"
-                                        placeholder="Search Service (DTDC, Maruti...)"
-                                        value={serviceSearch}
-                                        onFocus={() => setIsServiceOpen(true)}
-                                        onChange={(e) => {
-                                            setServiceSearch(e.target.value);
-                                            setIsServiceOpen(true);
-                                        }}
-                                    />
-                                    <Search size={14} className="search-icon-field" />
-                                </div>
-
-                                {isServiceOpen && (
-                                    <div className="custom-content-dropdown">
-                                        {filteredServices.length > 0 ? (
-                                            filteredServices.map(opt => (
-                                                <div
-                                                    key={opt}
-                                                    className={`dropdown-item ${formData.serviceName === opt ? 'selected' : ''}`}
-                                                    onClick={() => selectService(opt)}
-                                                >
-                                                    {opt}
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="dropdown-no-results">No matches found</div>
-                                        )}
+                            <div className="compact-grid">
+                                <div className="control-group">
+                                    <label>To Center <span className="req">*</span></label>
+                                    <div className="input-container">
+                                        <input name="toCenter" value={formData.toCenter} onChange={handleChange} placeholder="Destination" />
                                     </div>
-                                )}
-                                {errors.serviceName && <span className="error-text">{errors.serviceName}</span>}
+                                </div>
+                                <div className="control-group">
+                                    <label>Pickup Boy <span className="req">*</span></label>
+                                    <div className="input-container">
+                                        <select name="pickupBoy" value={formData.pickupBoy} onChange={handleChange}>
+                                            <option value="">Select Personnel...</option>
+                                            <option value="Rajesh">Rajesh Kumar</option>
+                                            <option value="Amit">Amit Sharma</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="control-group">
-                                <label>To Center <span className="req">*</span></label>
-                                <input name="toCenter" value={formData.toCenter} onChange={handleChange} placeholder="Destination" />
-                            </div>
-                            <div className="control-group">
-                                <label>Pickup Boy <span className="req">*</span></label>
-                                <select name="pickupBoy" value={formData.pickupBoy} onChange={handleChange}>
-                                    <option value="">Select Personnel...</option>
-                                    <option value="Rajesh">Rajesh Kumar</option>
-                                    <option value="Amit">Amit Sharma</option>
-                                </select>
+                            <div className="control-group" style={{ marginTop: '20px' }}>
+                                <label>Service Options <span className="req">*</span></label>
+                                <div className="service-cards">
+                                    <div
+                                        className={`service-card ${formData.serviceName === 'Premium' ? 'active' : ''}`}
+                                        onClick={() => setFormData(p => ({ ...p, serviceName: 'Premium' }))}
+                                    >
+                                        <div className="service-title" style={{ fontWeight: 800 }}>Premium</div>
+                                        <div className="service-time" style={{ fontSize: '11px', color: '#64748b' }}>Next day delivery</div>
+                                        <div className="service-rate" style={{ color: '#004b8d', fontWeight: 700 }}>₹189</div>
+                                    </div>
+                                    <div
+                                        className={`service-card ${formData.serviceName === 'Standard' ? 'active' : ''}`}
+                                        onClick={() => setFormData(p => ({ ...p, serviceName: 'Standard' }))}
+                                    >
+                                        <div className="service-title" style={{ fontWeight: 800 }}>Standard</div>
+                                        <div className="service-time" style={{ fontSize: '11px', color: '#64748b' }}>1-2 business days</div>
+                                        <div className="service-rate" style={{ color: '#004b8d', fontWeight: 700 }}>₹69</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -503,16 +524,19 @@ const AccountEntry = () => {
                 return (
                     <div className="step-view fade-in">
                         <div className="form-centered">
-                            <header className="col-header"><Package size={16} /> Item Details</header>
-                            <div className="control-group">
-                                <label>Docket Number <span className="req">*</span></label>
-                                <input name="docketNumber" value={formData.docketNumber} onChange={handleChange} placeholder="Required" />
-                                {errors.docketNumber && <span className="error-text">{errors.docketNumber}</span>}
-                            </div>
-                            <div className="control-row">
+                            <header className="section-title-premium">Item Details</header>
+
+                            <div className="compact-grid">
+                                <div className="control-group">
+                                    <label>Docket Number <span className="req">*</span></label>
+                                    <div className="input-container">
+                                        <input name="docketNumber" value={formData.docketNumber} onChange={handleChange} placeholder="Required" />
+                                    </div>
+                                    {errors.docketNumber && <span className="error-text">{errors.docketNumber}</span>}
+                                </div>
                                 <div className="control-group scroll-dropdown-container" ref={weightRef}>
                                     <label>Weight <span className="req">*</span></label>
-                                    <div className="content-search-wrapper">
+                                    <div className="input-container content-search-wrapper">
                                         <input
                                             type="text"
                                             name="itemWeight"
@@ -546,14 +570,6 @@ const AccountEntry = () => {
                                     )}
                                     {errors.itemWeight && <span className="error-text">{errors.itemWeight}</span>}
                                 </div>
-                                {formData.shipmentType === 'Non-Document' && (
-                                    <div className="control-group">
-                                        <label>Volumetric Weight</label>
-                                        <div className="read-only-display">
-                                            {formData.volumetricWeight ? `${formData.volumetricWeight} KG` : 'Enter dimensions...'}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
 
                             {formData.shipmentType === 'Non-Document' && (
@@ -573,17 +589,24 @@ const AccountEntry = () => {
                                             <input name="height" type="number" value={formData.height} onChange={handleChange} placeholder="H" />
                                         </div>
                                     </div>
+                                    <div className="control-group mt-2" style={{ marginTop: '15px' }}>
+                                        <div className="read-only-display">
+                                            {formData.volumetricWeight ? `${formData.volumetricWeight} KG` : 'Enter dimensions...'}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
-                            <div className="control-group">
+                            <div className="control-group" style={{ marginTop: formData.shipmentType === 'Non-Document' ? '20px' : '0' }}>
                                 <label>Weight Description</label>
-                                <input name="weightDescription" value={formData.weightDescription} onChange={handleChange} placeholder="e.g. 2 Boxes" />
+                                <div className="input-container">
+                                    <input name="weightDescription" value={formData.weightDescription} onChange={handleChange} placeholder="e.g. 2 Boxes" />
+                                </div>
                             </div>
 
                             <div className="control-group scroll-dropdown-container" ref={contentRef}>
                                 <label>Content <span className="req">*</span></label>
-                                <div className="content-search-wrapper">
+                                <div className="input-container content-search-wrapper">
                                     <input
                                         type="text"
                                         placeholder="Search or Select Content..."
@@ -619,26 +642,32 @@ const AccountEntry = () => {
                                 {formData.content === 'Others' && (
                                     <div className="manual-entry-area fade-in" style={{ marginTop: '12px' }}>
                                         <label style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: '700' }}>MANUAL DESCRIPTION *</label>
-                                        <input
-                                            name="contentManual"
-                                            value={formData.contentManual}
-                                            onChange={handleChange}
-                                            placeholder="Enter specific content details..."
-                                            autoFocus
-                                        />
+                                        <div className="input-container">
+                                            <input
+                                                name="contentManual"
+                                                value={formData.contentManual}
+                                                onChange={handleChange}
+                                                placeholder="Enter specific content details..."
+                                                autoFocus
+                                            />
+                                        </div>
                                         {errors.contentManual && <span className="error-text">{errors.contentManual}</span>}
                                     </div>
                                 )}
                             </div>
 
-                            <div className="control-row">
+                            <div className="compact-grid">
                                 <div className="control-group">
                                     <label>Parcel Value <span className="req">*</span></label>
-                                    <input name="parcelValue" value={formData.parcelValue} onChange={handleChange} placeholder="₹ 0" />
+                                    <div className="input-container">
+                                        <input name="parcelValue" value={formData.parcelValue} onChange={handleChange} placeholder="₹ 0" />
+                                    </div>
                                 </div>
                                 <div className="control-group">
                                     <label>E-Way Bill</label>
-                                    <input name="ewayBillNumber" value={formData.ewayBillNumber} onChange={handleChange} placeholder="Optional" />
+                                    <div className="input-container">
+                                        <input name="ewayBillNumber" value={formData.ewayBillNumber} onChange={handleChange} placeholder="Optional" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -647,78 +676,160 @@ const AccountEntry = () => {
             case 4:
                 return (
                     <div className="step-view fade-in">
-                        <div className="form-centered summary-preview">
-                            <header className="col-header"><CreditCard size={16} /> Entry Summary</header>
-                            <div className="summary-grid">
-                                <div className="summary-item">
-                                    <label>Docket Number</label>
-                                    <span>{formData.docketNumber || 'N/A'}</span>
-                                </div>
-                                <div className="summary-item">
-                                    <label>Party Name</label>
-                                    <span>{formData.partyName || 'N/A'}</span>
-                                </div>
-                                <div className="summary-item">
-                                    <label>Shipment Type</label>
-                                    <span>{formData.shipmentType}</span>
-                                </div>
-                                <div className="summary-item">
-                                    <label>Service</label>
-                                    <span>{formData.serviceName || 'Standard'}</span>
-                                </div>
-                                <div className="summary-item full">
-                                    <label>Destination</label>
-                                    <p>{formData.toCenter || 'Not specified'}</p>
-                                </div>
-                                <div className="summary-item">
-                                    <label>Weight</label>
-                                    <span>{formData.itemWeight || '0'}</span>
-                                </div>
-                                {formData.shipmentType === 'Non-Document' && (
-                                    <div className="summary-item">
-                                        <label>Volumetric</label>
-                                        <span>{formData.volumetricWeight || '0'} KG</span>
+                        <header className="section-title-premium">Entry Summary</header>
+                        <div className="summary-cards-container-v2">
+                            <div className="summary-card-v2 full-width">
+                                <div className="card-header-v2">
+                                    <div className="header-left">
+                                        <Package size={16} /> SERVICE & SHIPMENT DETAILS
                                     </div>
-                                )}
-                                <div className="summary-item">
-                                    <label>Content</label>
-                                    <span>{formData.content === 'Others' ? formData.contentManual : formData.content}</span>
+                                    <span className={`badge-pill-v2 ${formData.shipmentType === 'Document' ? 'standard' : 'premium'}`}>
+                                        {formData.shipmentType}
+                                    </span>
+                                </div>
+                                <div className="card-body-grid-v2">
+                                    <div className="data-item-v2">
+                                        <label>DOCKET NUMBER</label>
+                                        <span>{formData.docketNumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="data-item-v2">
+                                        <label>SERVICE</label>
+                                        <span>{formData.serviceName || 'Standard'}</span>
+                                    </div>
+                                    <div className="data-item-v2">
+                                        <label>DESTINATION</label>
+                                        <span>{formData.toCenter || 'N/A'}</span>
+                                    </div>
+                                    <div className="data-item-v2">
+                                        <label>PICKUP BY</label>
+                                        <span>{formData.pickupBoy || 'N/A'}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="custom-actions">
-                                <button className="btn-nav btn-back" onClick={() => setCurrentStep(3)}>Cancel</button>
-                                <button className="btn-nav btn-next" onClick={handleNext}>Save Entry</button>
+
+                            <div className="summary-card-v2">
+                                <div className="card-header-v2">
+                                    <div className="header-left"><User size={16} /> PARTY DETAILS</div>
+                                </div>
+                                <div className="card-content-v2">
+                                    <strong>{formData.partyName}</strong>
+                                    <div className="info-row-v2" style={{ marginTop: '5px' }}>
+                                        E-Way Bill: {formData.ewayBillNumber || 'N/A'}
+                                    </div>
+                                    <div className="info-row-v2">
+                                        Value: ₹{formData.parcelValue}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="summary-card-v2">
+                                <div className="card-header-v2" style={{ marginBottom: '10px' }}>
+                                    <div className="header-left"><Maximize2 size={16} /> WEIGHT & CONTENT</div>
+                                </div>
+                                <div className="card-body-v2" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    <div className="weight-stat-v2" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '15px', paddingTop: '0' }}>
+                                        <div className="stat-box-v2">
+                                            <label>DEAD WT</label>
+                                            <span>{formData.itemWeight}</span>
+                                        </div>
+                                        {formData.shipmentType === 'Non-Document' && (
+                                            <div className="stat-box-v2">
+                                                <label>VOL WT</label>
+                                                <span>{formData.volumetricWeight || '-'} KG</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="content-box-v2" style={{ paddingTop: '5px' }}>
+                                        <label>CONTENT DESCRIPTION</label>
+                                        <p>{formData.content === 'Others' ? formData.contentManual : formData.content}</p>
+                                        <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>{formData.weightDescription}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="summary-card-v2 highlight">
+                                <div className="card-header-v2 no-border" style={{ paddingBottom: '10px' }}>
+                                    <div className="header-left" style={{ color: '#fff' }}><CreditCard size={16} /> FINAL PRICING</div>
+                                </div>
+                                <div className="price-details-v2" style={{ padding: '0 25px 30px' }}>
+                                    <div className="price-row-v2" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ fontSize: '15px', color: '#e0f2fe' }}>Selected Service</span>
+                                        <span style={{ fontSize: '15px', fontWeight: '600', color: '#fff' }}>{formData.serviceName || 'Standard'}</span>
+                                    </div>
+                                    <div className="total-row-v2" style={{ marginTop: '0', borderTop: 'none', paddingTop: '0', fontSize: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span>Total Amount</span>
+                                        <span>₹{formData.serviceName === 'Premium' ? '189.00' : '69.00'}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+
                     </div>
                 );
             case 5:
                 return (
                     <div className="step-view fade-in">
                         <div className="form-centered">
-                            <header className="col-header"><Wallet size={16} /> Payment & Print</header>
+                            <header className="section-title-premium">Payment Collection</header>
+
                             <div className="control-group">
-                                <label>Payment Mode <span className="req">*</span></label>
-                                <select name="paymentMode" value={formData.paymentMode} onChange={handleChange}>
-                                    <option value="Cash">Cash</option>
-                                    <option value="Online">Online</option>
-                                    <option value="UPI">UPI</option>
-                                </select>
+                                <label style={{ marginBottom: '15px', display: 'block' }}>Payment Mode <span className="req">*</span></label>
+                                <div className="radio-group-modern">
+                                    <label className={`radio-card ${formData.paymentMode === 'Cash' ? 'active' : ''}`}>
+                                        <input
+                                            type="radio"
+                                            name="paymentMode"
+                                            value="Cash"
+                                            checked={formData.paymentMode === 'Cash'}
+                                            onChange={handleChange}
+                                        />
+                                        <div className="radio-content">
+                                            <span>Cash</span>
+                                            <small>Physical Cash</small>
+                                        </div>
+                                    </label>
+                                    <label className={`radio-card ${formData.paymentMode === 'Online' ? 'active' : ''}`}>
+                                        <input
+                                            type="radio"
+                                            name="paymentMode"
+                                            value="Online"
+                                            checked={formData.paymentMode === 'Online'}
+                                            onChange={handleChange}
+                                        />
+                                        <div className="radio-content">
+                                            <span>Online</span>
+                                            <small>Digital Payment</small>
+                                        </div>
+                                    </label>
+                                    <label className={`radio-card ${formData.paymentMode === 'UPI' ? 'active' : ''}`}>
+                                        <input
+                                            type="radio"
+                                            name="paymentMode"
+                                            value="UPI"
+                                            checked={formData.paymentMode === 'UPI'}
+                                            onChange={handleChange}
+                                        />
+                                        <div className="radio-content">
+                                            <span>UPI</span>
+                                            <small>UPI / QR Scan</small>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
-                            <div className="control-group">
+
+                            <div className="control-group" style={{ marginTop: '25px' }}>
                                 <label>Payment Status <span className="req">*</span></label>
-                                <select name="paymentStatus" value={formData.paymentStatus} onChange={handleChange}>
-                                    <option value="Paid">Paid</option>
-                                    <option value="Pending">Pending</option>
-                                </select>
-                            </div>
-                            <div className="custom-actions">
-                                <button className="btn-nav btn-secondary" onClick={() => alert('Printing...')}>
-                                    <Printer size={18} /> Print
-                                </button>
-                                <button className="btn-nav btn-next" onClick={handleNext}>Complete Entry</button>
+                                <div className="input-container" style={{ maxWidth: '300px' }}>
+                                    <select name="paymentStatus" value={formData.paymentStatus} onChange={handleChange}>
+                                        <option value="Paid">Paid</option>
+                                        <option value="Pending">Pending</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
+
+
                     </div>
                 );
             case 6:
@@ -728,12 +839,149 @@ const AccountEntry = () => {
                             <CheckCircle2 color="var(--success)" size={84} strokeWidth={1.5} />
                         </div>
                         <h2>Successfully saved account entry</h2>
-                        <button className="btn-main" onClick={handleReset}>Next Entry</button>
+                        <div className="action-buttons" style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '30px' }}>
+                            <button className="btn-nav-next" onClick={() => window.print()}>
+                                <Printer size={18} /> PRINT
+                            </button>
+                            <button className="btn-main" onClick={handleReset}>NEXT ENTRY</button>
+                        </div>
+
+                        {/* Printable Summary for Step 6 */}
+                        <div className="printable-summary-container" style={{ textAlign: 'left', marginTop: '40px', maxWidth: '850px', margin: '40px auto 0' }}>
+                            <div className="summary-cards-container-v2">
+                                <div className="summary-card-v2 full-width">
+                                    <div className="card-header-v2">
+                                        <div className="header-left">
+                                            <Package size={16} /> ACCOUNT & SHIPMENT DETAILS
+                                        </div>
+                                        <span className={`badge-pill-v2 ${formData.shipmentType === 'Document' ? 'standard' : 'premium'}`}>
+                                            {formData.shipmentType}
+                                        </span>
+                                    </div>
+                                    <div className="card-body-grid-v2">
+                                        <div className="data-item-v2">
+                                            <label>DOCKET NUMBER</label>
+                                            <span>{formData.docketNumber || 'N/A'}</span>
+                                        </div>
+                                        <div className="data-item-v2">
+                                            <label>SERVICE</label>
+                                            <span>{formData.serviceName || 'Standard'}</span>
+                                        </div>
+                                        <div className="data-item-v2">
+                                            <label>DESTINATION</label>
+                                            <span>{formData.toCenter || 'N/A'}</span>
+                                        </div>
+                                        <div className="data-item-v2">
+                                            <label>PICKUP BY</label>
+                                            <span>{formData.pickupBoy || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="summary-card-v2">
+                                    <div className="card-header-v2">
+                                        <div className="header-left"><User size={16} /> PARTY DETAILS</div>
+                                    </div>
+                                    <div className="card-content-v2">
+                                        <strong>{formData.partyName}</strong>
+                                        <div className="info-row-v2" style={{ marginTop: '5px' }}>
+                                            E-Way Bill: {formData.ewayBillNumber || 'N/A'}
+                                        </div>
+                                        <div className="info-row-v2">
+                                            Value: ₹{formData.parcelValue}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="summary-card-v2">
+                                    <div className="card-header-v2" style={{ marginBottom: '10px' }}>
+                                        <div className="header-left"><Maximize2 size={16} /> WEIGHT & CONTENT</div>
+                                    </div>
+                                    <div className="card-body-v2" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        <div className="weight-stat-v2" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '15px', paddingTop: '0' }}>
+                                            <div className="stat-box-v2">
+                                                <label>DEAD WT</label>
+                                                <span>{formData.itemWeight}</span>
+                                            </div>
+                                            {formData.shipmentType === 'Non-Document' && (
+                                                <div className="stat-box-v2">
+                                                    <label>VOL WT</label>
+                                                    <span>{formData.volumetricWeight || '-'} KG</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="content-box-v2" style={{ paddingTop: '5px' }}>
+                                            <label>CONTENT DESCRIPTION</label>
+                                            <p>{formData.content === 'Others' ? formData.contentManual : formData.content}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="summary-card-v2 highlight">
+                                    <div className="card-header-v2 no-border" style={{ paddingBottom: '10px' }}>
+                                        <div className="header-left" style={{ color: '#fff' }}><CreditCard size={16} /> FINAL PRICING & STATUS</div>
+                                    </div>
+                                    <div className="price-details-v2" style={{ padding: '0 25px 30px' }}>
+                                        <div className="price-row-v2" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ fontSize: '15px', color: '#e0f2fe' }}>Payment Mode</span>
+                                            <span style={{ fontSize: '15px', fontWeight: '600', color: '#fff' }}>{formData.paymentMode} ({formData.paymentStatus})</span>
+                                        </div>
+                                        <div className="total-row-v2" style={{ marginTop: '0', borderTop: 'none', paddingTop: '0', fontSize: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span>Total Amount</span>
+                                            <span>₹{formData.serviceName === 'Premium' ? '189.00' : '69.00'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 );
             default:
                 return null;
         }
+    };
+
+    const renderActions = () => {
+        if (currentStep === 6) return null;
+
+        // Case 5: Payment (Print + Complete)
+        if (currentStep === 5) {
+            return (
+                <div className="v6-actions-bar">
+                    <button className="btn-nav-next" onClick={handleNext}>
+                        COMPLETE ENTRY <ChevronRight size={16} />
+                    </button>
+                </div>
+            );
+        }
+
+        // Case 4: Summary (Back + Save)
+        if (currentStep === 4) {
+            return (
+                <div className="v6-actions-bar">
+                    <button className="btn-nav-back" onClick={handleBack}>
+                        <ChevronLeft size={16} /> BACK
+                    </button>
+                    <button className="btn-nav-next" onClick={handleNext}>
+                        SAVE ENTRY <ChevronRight size={16} />
+                    </button>
+                </div>
+            );
+        }
+
+        // Steps 1, 2, 3
+        return (
+            <div className="v6-actions-bar">
+                {currentStep > 1 && (
+                    <button className="btn-nav-back" onClick={handleBack}>
+                        <ChevronLeft size={16} /> BACK
+                    </button>
+                )}
+                <button className="btn-nav-next" onClick={handleNext}>
+                    CONTINUE <ChevronRight size={16} />
+                </button>
+            </div>
+        );
     };
 
     return (
@@ -742,30 +990,23 @@ const AccountEntry = () => {
                 renderRecordsTable()
             ) : (
                 <>
-                    <button className="btn-text-back-abs" onClick={() => setViewMode('table')}>
-                        <ChevronLeft size={16} /> Back to Records
-                    </button>
-
                     <div className="v6-header">
-                        {renderProgressIndicator()}
+                        <div className="header-top-row">
+                            <button className="btn-back-to-records" onClick={() => setViewMode('table')}>
+                                <ChevronLeft size={16} /> BACK TO RECORDS
+                            </button>
+                            <div className="header-title-main">ACCOUNT SHIPMENT BOOKING</div>
+                        </div>
+                        <div className="header-progress-row">
+                            {renderProgressIndicator()}
+                        </div>
                     </div>
 
                     <div className="v6-content">
                         {renderStepContent()}
                     </div>
 
-                    {currentStep < 4 && (
-                        <div className="v6-actions">
-                            <div className="actions-flex">
-                                <button className="btn-nav btn-back" onClick={handleBack} disabled={currentStep === 1}>
-                                    <ChevronLeft size={18} /> Back
-                                </button>
-                                <button className="btn-nav btn-next" onClick={handleNext}>
-                                    Next <ChevronRight size={18} />
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    {renderActions()}
                 </>
             )}
         </div>
