@@ -1,0 +1,350 @@
+/* Account Entry Base Styles - Standardized with Cash Entry */
+.v6-stepper-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.wide-stepper {
+    max-width: 1400px !important;
+}
+
+/* Table View Container */
+.table-view-container-outer {
+    position: relative;
+    padding-top: 20px;
+}
+
+/* Fixed Header - Exactly same as Cash Entry */
+.table-header-row {
+    position: fixed;
+    top: 64px;
+    left: 260px;
+    /* Sidebar width */
+    right: 0;
+    background: white;
+    z-index: 1000;
+    padding: 20px 32px;
+    display: flex;
+    flex-direction: column;
+    /* Stack button above title */
+    gap: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.header-title-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-info h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+    font-weight: 500;
+}
+
+.btn-new-entry {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.btn-new-entry:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+}
+
+/* Table Container & Scrollbar Cleanup */
+.table-view-container {
+    margin-top: 140px;
+    /* Space for stacked fixed header */
+    padding: 0 10px;
+}
+
+.table-container-outer {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.table-container-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Prevent vertical inner scroll */
+    width: 100%;
+}
+
+.cash-records-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.cash-records-table th {
+    background: #f8fafc;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.cash-records-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-main);
+}
+
+.cash-records-table tr:hover td {
+    background: #fdfdfd;
+}
+
+/* Badge Styles - Consistent with Cash Entry */
+.badge-type {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.badge-type.document {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.badge-type.non-document {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.badge-status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.badge-status.paid {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-status.pending {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Form Styles - Original preserved but integrated */
+/* Form View Styling - Standardized */
+/* Form View Styling - Standardized */
+.btn-text-back-abs {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+.btn-text-back-abs:hover {
+    color: var(--primary);
+}
+
+.v6-header {
+    margin-bottom: 32px;
+}
+
+.v6-content {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #e2e8f0;
+    min-height: 400px;
+}
+
+.v6-actions {
+    margin-top: 24px;
+    margin-bottom: 40px;
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.text-muted {
+    color: #94a3b8;
+}
+
+.text-xs {
+    font-size: 0.7rem;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dimensional Entry grid */
+.dimension-entry-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.section-label-mini {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+}
+
+.dimension-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+}
+
+.dim-input-group label {
+    display: block;
+    font-size: 0.65rem;
+    color: #64748b;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.dim-input-group input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: #fdfdfd;
+}
+
+/* Custom Dropdown Styles (Ported from Cash Entry for consistency) */
+.scroll-dropdown-container {
+    position: relative;
+}
+
+.content-search-wrapper {
+    position: relative;
+}
+
+.search-icon-field {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.custom-content-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-top: 4px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.dropdown-item {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: #f8fafc;
+    color: var(--primary);
+}
+
+.dropdown-item.selected {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.dropdown-no-results {
+    padding: 12px;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* Read only display */
+.read-only-display {
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 600;
+}
