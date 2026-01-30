@@ -975,3 +975,139 @@
     justify-content: flex-end;
     gap: 12px;
 }
+
+/* Print Specific Visibility */
+.print-only-summary {
+    display: none;
+}
+
+/* Print Styles */
+@media print {
+    @page {
+        margin: 15mm;
+        size: auto;
+    }
+
+    /* Hide Sidebar & Navigation & Success Screen Elements */
+    .table-header-row,
+    .v6-header,
+    .v6-actions-bar,
+    .btn-text-back-abs,
+    .sidebar,
+    nav,
+    aside,
+    .header,
+    header,
+    .action-buttons,
+    .success-icon-wrapper,
+    .success-screen h2,
+    .success-screen .success-card>h2,
+    .success-screen .success-card>p,
+    .success-screen .success-card>.success-icon-v2 {
+        display: none !important;
+    }
+
+    /* Reset Main Container Layout */
+    html,
+    body,
+    #root {
+        width: 100%;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        overflow: visible !important;
+    }
+
+    .v6-stepper-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        display: block !important;
+    }
+
+    /* Reset Content Box */
+    .v6-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        min-height: auto !important;
+        width: 100% !important;
+        display: block !important;
+    }
+
+    .success-screen {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    .success-card {
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .form-centered {
+        max-width: 100% !important;
+        box-shadow: none !important;
+    }
+
+    .print-only-summary {
+        display: block !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Compress Summary Layout for Print */
+    .summary-cards-container-v2 {
+        gap: 10px !important;
+        margin-top: 10px !important;
+        display: grid !important;
+    }
+
+    .summary-card-v2 {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        page-break-inside: avoid;
+    }
+
+    .card-header-v2 {
+        padding: 5px 15px !important;
+        min-height: auto;
+    }
+
+    .card-body-grid-v2,
+    .card-content-v2,
+    .price-details-v2 {
+        padding: 10px 15px !important;
+        gap: 10px !important;
+    }
+
+    .weight-stat-v2 {
+        padding: 10px 15px !important;
+    }
+
+    .summary-card-v2.highlight {
+        margin-top: 10px !important;
+    }
+
+    /* Force text color & Style for Pricing Card */
+    .summary-card-v2.highlight * {
+        color: black !important;
+        text-shadow: none !important;
+    }
+
+    .summary-card-v2.highlight {
+        border: 1px solid #000 !important;
+        background: none !important;
+    }
+}
