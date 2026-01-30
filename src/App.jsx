@@ -10,6 +10,7 @@ import Login from './screens/Login';
 import PickupBoys from './screens/PickupBoys';
 import Parties from './screens/Parties';
 import Services from './screens/Services';
+import Rates from './screens/Rates';
 import PlaceholderScreen from './screens/Placeholder';
 import './App.css';
 
@@ -50,7 +51,7 @@ function App() {
             <Route path="/pickup-boys" element={<PickupBoys />} />
             <Route path="/parties" element={<Parties />} />
             <Route path="/services" element={<Services />} />
-            <Route path="/rates" element={<PlaceholderScreen name="Rates" />} />
+            <Route path="/rates" element={<Rates />} />
             <Route path="/reports" element={<PlaceholderScreen name="Reports" />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
