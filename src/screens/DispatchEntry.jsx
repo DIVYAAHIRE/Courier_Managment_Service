@@ -91,20 +91,28 @@ const DispatchEntry = () => {
                     <h2>Dispatch Management</h2>
                     <p>Monitor and manage daily dispatch operations</p>
                 </div>
-                <div className="header-actions" style={{ position: 'relative' }}>
+                <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
+                    <button className="btn btn-outline" style={{ height: '42px' }}>
+                        <Download size={18} />
+                        Export List
+                    </button>
                     {successMsg && (
                         <div className="success-toast fade-in" style={{
-                            position: 'absolute',
-                            right: '100%',
-                            marginRight: '15px',
+                            position: 'fixed',
+                            top: '90px',
+                            right: '20px',
                             background: '#dcfce7',
                             color: '#166534',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            fontSize: '13px',
+                            padding: '12px 20px',
+                            borderRadius: '8px',
+                            fontSize: '14px',
                             fontWeight: '600',
                             whiteSpace: 'nowrap',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                            zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
                         }}>
                             <CheckCircle2 size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '5px' }} />
                             {successMsg}
@@ -112,7 +120,7 @@ const DispatchEntry = () => {
                     )}
                     <button
                         className="btn btn-primary"
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: isConfirming ? 0.7 : 1 }}
+                        style={{ height: '42px', display: 'flex', alignItems: 'center', gap: '8px', opacity: isConfirming ? 0.7 : 1 }}
                         onClick={handleConfirmDispatch}
                         disabled={isConfirming}
                     >
