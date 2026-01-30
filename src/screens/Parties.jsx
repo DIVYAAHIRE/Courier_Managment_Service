@@ -16,8 +16,8 @@ import './Parties.css';
 const Parties = () => {
     // Mock Data
     const [parties, setParties] = useState([
-        { id: '101', name: 'ABC Logistics', phone: '9876543210', address: '12, Industrial Area, Mumbai 400001', pincode: '400001', gst: '27ABCDE1234F1Z5' },
-        { id: '102', name: 'XYZ Traders', phone: '9123456789', address: '56, Market Road, Pune 411001', pincode: '411001', gst: '27XYZDE1234F1Z8' },
+        { id: '101', name: 'xyx chsjsks', phone: '98765', address: '12, Industrial Area, Mumbai 400001', pincode: '400001', gst: '27ABCDE1234F1Z5' },
+        { id: '102', name: 'XYZ Traders', phone: '9123456789', address: '56, Market Road, Pune 411001', pincode: '411001', gst: '27XYZDE128' },
         { id: '103', name: 'Global Exports', phone: '9988776655', address: '89, Port Road, Navi Mumbai 400703', pincode: '400703', gst: '27GLOBA1234F1Z2' }
     ]);
 
