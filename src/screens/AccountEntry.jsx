@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import './AccountEntry.css';
 import './CashEntry.css';
+import { supabase } from '../supabaseClient';
 
 const AccountEntry = () => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -75,59 +76,30 @@ const AccountEntry = () => {
     const [formData, setFormData] = useState(initialState);
 
     // Dummy records data
-    const [records, setRecords] = useState([
-        {
-            date: '2026-01-28',
-            docket_no: 'ACC8822001',
-            party_name: 'Global Tech Solutions',
-            type: 'Document',
-            service_name: 'DTDC',
-            to_center: 'Pune Hub',
-            pickup_boy: 'Rajesh',
-            item_weight: '250 gm',
-            volumetric_weight: '-',
-            weight_description: 'Envelope',
-            content: 'Invoices',
-            parcel_value: '50',
-            eway_bill_no: '-',
-            payment_status: 'Paid',
-            created_at: '2026-01-28 10:45:00'
-        },
-        {
-            date: '2026-01-27',
-            docket_no: 'ACC8822002',
-            party_name: 'Vertex Corporation',
-            type: 'Non-Document',
-            service_name: 'Blue Dart',
-            to_center: 'Mumbai Hub',
-            pickup_boy: 'Amit',
-            item_weight: '1.5 kg',
-            volumetric_weight: '1.8',
-            weight_description: 'Box',
-            content: 'Electronics',
-            parcel_value: '1200',
-            eway_bill_no: 'EB12345678',
-            payment_status: 'Paid',
-            created_at: '2026-01-27 15:20:12'
-        },
-        {
-            date: '2026-01-26',
-            docket_no: 'ACC8822003',
-            party_name: 'Reliance Industries',
-            type: 'Document',
-            service_name: 'Professional',
-            to_center: 'Delhi Hub',
-            pickup_boy: 'Rajesh',
-            item_weight: '100 gm',
-            volumetric_weight: '-',
-            weight_description: 'Small Pack',
-            content: 'Legal Docs',
-            parcel_value: '100',
-            eway_bill_no: '-',
-            payment_status: 'Pending',
-            created_at: '2026-01-26 11:10:05'
+    // Supabase records data
+    const [records, setRecords] = useState([]);
+
+    // Fetch records from Supabase on mount
+    useEffect(() => {
+        fetchRecords();
+    }, []);
+
+    const fetchRecords = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('acc_entry')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching acc_entry:", error);
+            } else {
+                setRecords(data || []);
+            }
+        } catch (err) {
+            console.error("Unexpected error fetching records:", err);
         }
-    ]);
+    };
 
     // Volumetric Calculation Hook
     useEffect(() => {
@@ -239,6 +211,9 @@ const AccountEntry = () => {
         });
 
         if (allFilled) {
+            if (currentStep === 5) {
+                submitToSupabase();
+            }
             setCompletedSteps(prev => [...new Set([...prev, currentStep])]);
             setCurrentStep(prev => Math.min(prev + 1, 6));
             setErrors({});
@@ -252,6 +227,52 @@ const AccountEntry = () => {
                 }
             });
             setErrors(newErrors);
+        }
+    };
+
+    const submitToSupabase = async () => {
+        try {
+            const finalContent = formData.content === 'Others' ? formData.contentManual : formData.content;
+
+            const parseWeightToKg = (str) => {
+                if (!str) return 0;
+                const s = str.toString().toLowerCase();
+                const val = parseFloat(s);
+                if (isNaN(val)) return 0;
+                if (s.includes('gm')) return val / 1000;
+                return val;
+            };
+
+            const newRecord = {
+                date: new Date().toISOString().split('T')[0],
+                docket_no: formData.docketNumber,
+                party_name: formData.partyName,
+                type: formData.shipmentType,
+                service_name: formData.serviceName,
+                to_center: formData.toCenter,
+                pickup_boy: formData.pickupBoy,
+                item_weight: parseWeightToKg(formData.itemWeight),
+                volumetric_weight: parseFloat(formData.volumetricWeight) || 0,
+                weight_description: formData.weightDescription || '-',
+                content: finalContent,
+                parcel_value: parseFloat(formData.parcelValue) || 0,
+                eway_bill_no: formData.ewayBillNumber || '-',
+                payment_status: 'Paid'
+            };
+
+            const { error } = await supabase
+                .from('acc_entry')
+                .insert([newRecord]);
+
+            if (error) {
+                console.error("Error inserting to acc_entry:", error);
+                alert(`Error saving to database:\n${error.message || JSON.stringify(error)}`);
+            } else {
+                fetchRecords();
+            }
+        } catch (err) {
+            console.error("Unexpected error submitting to Supabase:", err);
+            alert(`Unexpected error:\n${err.message || err}`);
         }
     };
 
@@ -835,19 +856,24 @@ const AccountEntry = () => {
             case 6:
                 return (
                     <div className="success-screen fade-in">
-                        <div className="success-icon-wrapper">
-                            <CheckCircle2 color="var(--success)" size={84} strokeWidth={1.5} />
-                        </div>
-                        <h2>Successfully saved account entry</h2>
-                        <div className="action-buttons" style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '30px' }}>
-                            <button className="btn-nav-next" onClick={() => window.print()}>
-                                <Printer size={18} /> PRINT
-                            </button>
-                            <button className="btn-main" onClick={handleReset}>NEXT ENTRY</button>
+                        <div className="success-card">
+                            <div className="success-icon-wrapper">
+                                <CheckCircle2 color="var(--success)" size={64} strokeWidth={2} />
+                            </div>
+                            <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#1e293b', marginBottom: '10px' }}>Booking Confirmed!</h2>
+                            <p style={{ color: '#64748b', marginBottom: '30px' }}>
+                                Docket <strong>{formData.docketNumber}</strong> has been successfully booked.
+                            </p>
+                            <div className="action-buttons" style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '10px' }}>
+                                <button className="btn-nav-next" onClick={() => window.print()}>
+                                    <Printer size={18} /> PRINT
+                                </button>
+                                <button className="btn-main" onClick={handleReset}>NEXT ENTRY</button>
+                            </div>
                         </div>
 
-                        {/* Printable Summary for Step 6 */}
-                        <div className="printable-summary-container" style={{ textAlign: 'left', marginTop: '40px', maxWidth: '850px', margin: '40px auto 0' }}>
+                        {/* Printable Summary (Hidden on Screen) */}
+                        <div className="print-only-summary" style={{ textAlign: 'left', marginTop: '40px', maxWidth: '850px', margin: '40px auto 0' }}>
                             <div className="summary-cards-container-v2">
                                 <div className="summary-card-v2 full-width">
                                     <div className="card-header-v2">

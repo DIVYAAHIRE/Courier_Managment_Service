@@ -305,6 +305,10 @@
 }
 
 /* Form Elements Polishing */
+.control-group {
+    position: relative;
+}
+
 .control-group label {
     display: block;
     font-size: 12px;
@@ -399,6 +403,8 @@
     z-index: 1000;
     max-height: 200px;
     overflow-y: auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .dropdown-item {
@@ -407,6 +413,9 @@
     color: var(--text-main);
     cursor: pointer;
     transition: background 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dropdown-item:hover {
@@ -475,6 +484,17 @@
     height: 18px;
 }
 
+/* Success Screen Redesign */
+.success-card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 500px;
+    margin: 40px auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
 .radio-content {
     display: flex;
     flex-direction: column;
@@ -491,45 +511,136 @@
     color: #64748b;
 }
 
+/* Print Specific Visibility */
+.print-only-summary {
+    display: none;
+}
+
 /* Print Styles */
 @media print {
+    @page {
+        margin: 15mm;
+        size: auto;
+    }
 
-    /* Hide Sidebar & Navigation */
+    /* Hide Sidebar & Navigation & Success Screen Elements */
     .table-header-row,
     .v6-header,
     .v6-actions-bar,
     .btn-text-back-abs,
     .sidebar,
     nav,
-    aside {
+    aside,
+    .header,
+    header,
+    .action-buttons,
+    .success-icon-wrapper,
+    .success-screen h2 {
         display: none !important;
     }
 
     /* Reset Main Container Layout */
+    /* Reset Main Container Layout */
+    html,
+    body,
+    #root {
+        width: 100%;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        overflow: visible !important;
+    }
+
     .v6-stepper-container {
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
+        display: block !important;
     }
 
     /* Reset Content Box */
     .v6-content {
-        margin-top: 0 !important;
+        margin: 0 !important;
         padding: 0 !important;
         border: none !important;
         box-shadow: none !important;
         min-height: auto !important;
         width: 100% !important;
+        display: block !important;
     }
 
-    /* Ensure white background */
-    body {
-        background: white !important;
+    .success-screen {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
     }
 
     .form-centered {
         max-width: 100% !important;
         box-shadow: none !important;
+    }
+
+    .print-only-summary {
+        display: block !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Compress Summary Layout for Print */
+    .summary-cards-container-v2 {
+        gap: 10px !important;
+        margin-top: 10px !important;
+        display: block !important;
+        /* Stack them for safety or keep grid if it fits */
+    }
+
+    /* Better to keep grid but reduce gaps */
+    .summary-cards-container-v2 {
+        display: grid !important;
+        gap: 15px !important;
+    }
+
+    .summary-card-v2 {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        page-break-inside: avoid;
+    }
+
+    .card-header-v2 {
+        padding: 5px 15px !important;
+        min-height: auto;
+    }
+
+    .card-body-grid-v2,
+    .card-content-v2,
+    .price-details-v2 {
+        padding: 10px 15px !important;
+        gap: 10px !important;
+    }
+
+    .weight-stat-v2 {
+        padding: 10px 15px !important;
+    }
+
+    .summary-card-v2.highlight {
+        margin-top: 10px !important;
+    }
+
+    /* Force text color & Style for Pricing Card */
+    .summary-card-v2.highlight * {
+        color: black !important;
+        text-shadow: none !important;
+    }
+
+    .summary-card-v2.highlight {
+        border: 1px solid #000 !important;
+        background: none !important;
     }
 }
