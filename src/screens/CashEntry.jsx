@@ -12,9 +12,11 @@ import {
     Maximize2,
     Search,
     Plus,
-    Table as TableIcon
+    Table as TableIcon,
+    Printer
 } from 'lucide-react';
 import './CashEntry.css';
+import { supabase } from '../supabaseClient';
 
 const CashEntry = () => {
     const docketRef = useRef(null);
@@ -69,60 +71,29 @@ const CashEntry = () => {
     const [errors, setErrors] = useState({});
 
     // Dummy records data
-    const [records] = useState([
-        {
-            id: 1,
-            date: '2026-01-28',
-            docket_no: 'DT123456789',
-            type: 'Document',
-            from_center: 'Mumbai Hub',
-            to_center: 'Delhi Hub',
-            sender_name: 'John Doe',
-            sender_mobile: '9876543210',
-            sender_pincode: '400001',
-            pickup_address: 'Flat 101, Sea View, Worli',
-            receiver_name: 'Alice Smith',
-            receiver_mobile: '9988776655',
-            receiver_pincode: '110001',
-            delivery_address: 'House 45, Karol Bagh',
-            pickup_boy: 'Rajesh',
-            item_weight: '500 gm',
-            volumetric_weight: '-',
-            weight_description: 'Envelope',
-            content: 'Legal Docs',
-            parcel_value: '100',
-            total_amount: '69',
-            payment_mode: 'Cash',
-            payment_status: 'Paid',
-            created_at: '2026-01-28 10:15:22'
-        },
-        {
-            id: 2,
-            date: '2026-01-27',
-            docket_no: 'DT987654321',
-            type: 'Non-Document',
-            from_center: 'Bangalore Hub',
-            to_center: 'Pune Hub',
-            sender_name: 'Tech Corp',
-            sender_mobile: '8877665544',
-            sender_pincode: '560001',
-            pickup_address: 'IT Park, Koramangala',
-            receiver_name: 'Vertex Solutions',
-            receiver_mobile: '7766554433',
-            receiver_pincode: '411001',
-            delivery_address: 'MG Road, Camp',
-            pickup_boy: 'Amit',
-            item_weight: '2 kg',
-            volumetric_weight: '2.4',
-            weight_description: 'Box',
-            content: 'Electronics',
-            parcel_value: '5000',
-            total_amount: '189',
-            payment_mode: 'Online',
-            payment_status: 'Paid',
-            created_at: '2026-01-27 15:42:10'
+    const [records, setRecords] = useState([]);
+
+    // Fetch records from Supabase on mount
+    useEffect(() => {
+        fetchRecords();
+    }, []);
+
+    const fetchRecords = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('cash_entry')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching cash_entry:", error);
+            } else {
+                setRecords(data || []);
+            }
+        } catch (err) {
+            console.error("Unexpected error fetching records:", err);
         }
-    ]);
+    };
 
     const weightOptionsList = [
         "100 gm", "250 gm", "500 gm", "1 kg", "2 kg", "3 kg", "4 kg", "5 kg", "6 kg", "7 kg",
@@ -234,9 +205,69 @@ const CashEntry = () => {
         if (hasErrors) {
             setErrors(newErrors);
         } else {
+            if (currentStep === 5) {
+                // Submit to Supabase
+                submitToSupabase();
+            }
             setCompletedSteps(prev => [...new Set([...prev, currentStep])]);
             setCurrentStep(prev => Math.min(prev + 1, 6));
             setErrors({});
+        }
+    };
+
+    const submitToSupabase = async () => {
+        try {
+            const amount = formData.selectedService === 'Premium' ? '189' : '69';
+            const pickupAddr = `${formData.senderAddress1 || ''} ${formData.senderCity || ''}`.trim();
+            const deliveryAddr = `${formData.receiverAddress1 || ''} ${formData.receiverCity || ''}`.trim();
+
+            const parseWeightToKg = (str) => {
+                if (!str) return 0;
+                const s = str.toString().toLowerCase();
+                const val = parseFloat(s);
+                if (isNaN(val)) return 0;
+                if (s.includes('gm')) return val / 1000;
+                return val;
+            };
+
+            const newRecord = {
+                date: new Date().toISOString().split('T')[0],
+                docket_no: formData.docketNumber,
+                type: formData.shipmentCategory,
+                from_center: 'Mumbai Hub',
+                to_center: formData.receiverCity || 'Destination',
+                sender_name: formData.senderName,
+                sender_mobile: formData.senderMobile,
+                sender_pincode: formData.senderPincode,
+                pickup_address: pickupAddr,
+                receiver_name: formData.receiverName,
+                receiver_mobile: formData.receiverMobile,
+                receiver_pincode: formData.receiverPincode,
+                delivery_address: deliveryAddr,
+                pickup_boy: 'Rajesh',
+                item_weight: parseWeightToKg(formData.itemWeight),
+                volumetric_weight: parseFloat(formData.volumetricWeight) || 0,
+                weight_description: formData.weightDescription || '-',
+                content: formData.content,
+                parcel_value: parseFloat(formData.parcelValue) || 0,
+                total_amount: parseFloat(amount),
+                payment_mode: formData.paymentMode,
+                payment_status: 'Paid'
+            };
+
+            const { error } = await supabase
+                .from('cash_entry')
+                .insert([newRecord]);
+
+            if (error) {
+                console.error("Error inserting to cash_entry:", error);
+                alert(`Error saving to database:\n${error.message || JSON.stringify(error)}`);
+            } else {
+                fetchRecords(); // Refresh table
+            }
+        } catch (err) {
+            console.error("Unexpected error submitting to Supabase:", err);
+            alert(`Unexpected error:\n${err.message || err}`);
         }
     };
 
@@ -288,16 +319,10 @@ const CashEntry = () => {
         setViewMode('table');
     };
 
-    // Auto-navigate to records after completion
+    // Auto-navigate removed
     useEffect(() => {
-        if (currentStep === 6) {
-            const timer = setTimeout(() => {
-                handleReset();
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentStep]);
+        // No auto-redirect
+    }, []);
 
     const formatAddressSummary = (type) => {
         const addr1 = formData[`${type}Address1`];
@@ -796,20 +821,20 @@ const CashEntry = () => {
                                         <p>{formData.content}</p>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="summary-card-v2 highlight">
-                                <div className="card-header-v2 no-border" style={{ paddingBottom: '10px' }}>
-                                    <div className="header-left" style={{ color: '#fff' }}><CreditCard size={16} /> FINAL PRICING</div>
-                                </div>
-                                <div className="price-details-v2" style={{ padding: '0 25px 30px' }}>
-                                    <div className="price-row-v2" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ fontSize: '15px', color: '#e0f2fe' }}>Selected Service</span>
-                                        <span style={{ fontSize: '15px', fontWeight: '600', color: '#fff' }}>{formData.selectedService}</span>
+                                <div className="summary-card-v2 highlight" style={{ marginTop: '20px' }}>
+                                    <div className="card-header-v2 no-border" style={{ paddingBottom: '10px' }}>
+                                        <div className="header-left" style={{ color: '#fff' }}><CreditCard size={16} /> FINAL PRICING</div>
                                     </div>
-                                    <div className="total-row-v2" style={{ marginTop: '0', borderTop: 'none', paddingTop: '0', fontSize: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span>Total Amount</span>
-                                        <span>₹{formData.selectedService === 'Premium' ? '189.00' : '69.00'}</span>
+                                    <div className="price-details-v2" style={{ padding: '0 25px 30px' }}>
+                                        <div className="price-row-v2" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ fontSize: '15px', color: '#e0f2fe' }}>Selected Service</span>
+                                            <span style={{ fontSize: '15px', fontWeight: '600', color: '#fff' }}>{formData.selectedService}</span>
+                                        </div>
+                                        <div className="total-row-v2" style={{ marginTop: '0', borderTop: 'none', paddingTop: '0', fontSize: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span>Total Amount</span>
+                                            <span>₹{formData.selectedService === 'Premium' ? '189.00' : '69.00'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -860,6 +885,110 @@ const CashEntry = () => {
                             <p style={{ color: '#64748b', marginBottom: '30px' }}>
                                 Docket <strong>{formData.docketNumber}</strong> has been successfully booked.
                             </p>
+                            <div className="action-buttons" style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '10px' }}>
+                                <button className="btn-nav-next" onClick={() => window.print()}>
+                                    <Printer size={18} /> PRINT
+                                </button>
+                                <button className="btn-main" onClick={handleReset}>NEXT ENTRY</button>
+                            </div>
+
+                            {/* Printable Summary (Also matches AccountEntry Structure) */}
+                            <div className="print-only-summary" style={{ textAlign: 'left', marginTop: '40px', maxWidth: '850px', margin: '40px auto 0' }}>
+                                <div className="summary-cards-container-v2">
+                                    <div className="summary-card-v2 full-width">
+                                        <div className="card-header-v2">
+                                            <div className="header-left">
+                                                <Package size={16} /> SERVICE & SHIPMENT DETAILS
+                                            </div>
+                                            <span className={`badge-pill-v2 ${formData.selectedService === 'Premium' ? 'premium' : 'standard'}`}>
+                                                {formData.selectedService}
+                                            </span>
+                                        </div>
+                                        <div className="card-body-grid-v2">
+                                            <div className="data-item-v2">
+                                                <label>DOCKET NUMBER</label>
+                                                <span>{formData.docketNumber}</span>
+                                            </div>
+                                            <div className="data-item-v2">
+                                                <label>CATEGORY</label>
+                                                <span>{formData.shipmentCategory}</span>
+                                            </div>
+                                            <div className="data-item-v2">
+                                                <label>TYPE</label>
+                                                <span>{formData.shipmentType}</span>
+                                            </div>
+                                            <div className="data-item-v2">
+                                                <label>PARCEL VALUE</label>
+                                                <span>₹{formData.parcelValue}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="summary-card-v2">
+                                        <div className="card-header-v2">
+                                            <div className="header-left"><User size={16} /> CONSIGNOR (FROM)</div>
+                                        </div>
+                                        <div className="card-content-v2">
+                                            <strong>{formData.senderName}</strong>
+                                            <div className="info-row-v2" style={{ marginTop: '5px' }}>
+                                                <Hash size={12} /> {formData.senderMobile}
+                                            </div>
+                                            <div className="address-block-v2">{formatAddressSummary('sender')}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="summary-card-v2">
+                                        <div className="card-header-v2">
+                                            <div className="header-left"><MapPin size={16} /> CONSIGNEE (TO)</div>
+                                        </div>
+                                        <div className="card-content-v2">
+                                            <strong>{formData.receiverName}</strong>
+                                            <div className="info-row-v2" style={{ marginTop: '5px' }}>
+                                                <Hash size={12} /> {formData.receiverMobile}
+                                            </div>
+                                            <div className="address-block-v2">{formatAddressSummary('receiver')}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="summary-card-v2">
+                                        <div className="card-header-v2" style={{ marginBottom: '10px' }}>
+                                            <div className="header-left"><Maximize2 size={16} /> WEIGHT & CONTENT</div>
+                                        </div>
+                                        <div className="card-body-v2" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                            <div className="weight-stat-v2" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '15px', paddingTop: '0' }}>
+                                                <div className="stat-box-v2">
+                                                    <label>DEAD WT</label>
+                                                    <span>{formData.itemWeight}</span>
+                                                </div>
+                                                <div className="stat-box-v2">
+                                                    <label>VOL WT</label>
+                                                    <span>{formData.volumetricWeight || '-'} KG</span>
+                                                </div>
+                                            </div>
+                                            <div className="content-box-v2" style={{ paddingTop: '5px' }}>
+                                                <label>CONTENT DESCRIPTION</label>
+                                                <p>{formData.content}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="summary-card-v2 highlight">
+                                        <div className="card-header-v2 no-border" style={{ paddingBottom: '10px' }}>
+                                            <div className="header-left" style={{ color: '#fff' }}><CreditCard size={16} /> FINAL PRICING</div>
+                                        </div>
+                                        <div className="price-details-v2" style={{ padding: '0 25px 30px' }}>
+                                            <div className="price-row-v2" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ fontSize: '15px', color: '#e0f2fe' }}>Payment Mode</span>
+                                                <span style={{ fontSize: '15px', fontWeight: '600', color: '#fff' }}>{formData.paymentMode}</span>
+                                            </div>
+                                            <div className="total-row-v2" style={{ marginTop: '0', borderTop: 'none', paddingTop: '0', fontSize: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span>Total Amount</span>
+                                                <span>₹{formData.selectedService === 'Premium' ? '189.00' : '69.00'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 );
@@ -915,7 +1044,31 @@ const AddressModal = ({ isOpen, onClose, type, formData, onChange }) => {
         { id: 3, name: 'ABC', address: 'Malego, , NASIK, MAHARASHTRA, 423203', mobile: '9371655370' }
     ];
 
+    const [errorMsg, setErrorMsg] = React.useState('');
+
     const handleSelectSaved = (addr) => {
+        const otherPrefix = type === 'sender' ? 'receiver' : 'sender';
+
+        // Validation: Check against current values of the OTHER party
+        const otherName = formData[`${otherPrefix}Name`];
+        const otherAddr1 = formData[`${otherPrefix}Address1`];
+        const otherPin = formData[`${otherPrefix}Pincode`];
+        const otherMobile = formData[`${otherPrefix}Mobile`];
+
+        // Ensure we compare defined strings
+        const isDuplicate =
+            (addr.name || '').trim().toLowerCase() === (otherName || '').trim().toLowerCase() &&
+            (addr.address || '').trim().toLowerCase() === (otherAddr1 || '').trim().toLowerCase() &&
+            ('423203') === (otherPin || '').trim() && // Hardcoded pin in savedAddresses
+            (addr.mobile || '').trim() === (otherMobile || '').trim();
+
+        if (isDuplicate) {
+            setErrorMsg('Sender and Receiver address cannot be the same');
+            // Clear error after 3 seconds
+            setTimeout(() => setErrorMsg(''), 3000);
+            return;
+        }
+
         const updates = {
             [`${prefix}Name`]: addr.name,
             [`${prefix}Address1`]: addr.address,
@@ -927,6 +1080,9 @@ const AddressModal = ({ isOpen, onClose, type, formData, onChange }) => {
         Object.entries(updates).forEach(([name, value]) => {
             onChange({ target: { name, value } });
         });
+
+        // Clear any previous error and close logic if needed (but currently just updates form)
+        setErrorMsg('');
     };
 
     return (
@@ -996,6 +1152,20 @@ const AddressModal = ({ isOpen, onClose, type, formData, onChange }) => {
 
                     <div className="modal-saved-col">
                         <header className="saved-header">Saved Addresses</header>
+                        {errorMsg && (
+                            <div style={{
+                                padding: '10px',
+                                background: '#fee2e2',
+                                color: '#b91c1c',
+                                border: '1px solid #fecaca',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                marginBottom: '10px',
+                                fontWeight: '600'
+                            }}>
+                                {errorMsg}
+                            </div>
+                        )}
                         <div className="saved-list">
                             {savedAddresses.map(addr => (
                                 <div key={addr.id} className="address-card" onClick={() => handleSelectSaved(addr)}>

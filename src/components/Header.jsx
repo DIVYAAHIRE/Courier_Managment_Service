@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bell, Search, Settings } from 'lucide-react';
+import SupabaseTestButton from './SupabaseTestButton';
 import './Header.css';
 
 const Header = ({ title }) => {
@@ -9,6 +10,7 @@ const Header = ({ title }) => {
                 <h1 className="page-title">{title}</h1>
             </div>
             <div className="header-right">
+                <SupabaseTestButton />
                 <div className="search-bar">
                     <Search size={18} className="search-icon" />
                     <input type="text" placeholder="Search for shipments, dockets..." />
